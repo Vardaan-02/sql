@@ -58,49 +58,89 @@ router.get("/purchase-orders/:id", async (req: Request, res: Response) => {
 
 // Create a new purchase order (with items)
 router.post("/purchase-orders", async (req: Request, res: Response) => {
-    const { Supplier_ID, items } = req.body;
-  
-    if (!Supplier_ID || !Array.isArray(items) || items.length === 0) {
-      res.status(400).json({ success: false, message: "Supplier_ID and items are required" });
-      return;
-    }
-  
-    try {
-      // Calculate total amount from items
-      const totalAmount = items.reduce((sum: number, item: any) => {
-        return sum + item.Quantity * item.Unit_Price;
-      }, 0);
-  
-      const newOrder = await prisma.purchase_Order.create({
-        data: {
-          Supplier_ID,
-          Order_Date: new Date(),
-          Total_Amount: totalAmount,
-          details: {
-            create: items.map((item: any) => ({
-              Product_ID: item.Product_ID,
-              Quantity: item.Quantity,
-              Unit_Price: item.Unit_Price,
-            })),
-          },
+  const {
+    Supplier_ID,
+    Delivery_Date,
+    Payment_Terms,
+    Payment_Method,
+    Shipping_Address,
+    Shipping_Method,
+    Shipping_Instructions,
+    Notes,
+    items,
+  } = req.body;
+
+  if (
+    !Supplier_ID ||
+    !Array.isArray(items) ||
+    items.length === 0 ||
+    !Payment_Terms ||
+    !Payment_Method ||
+    !Shipping_Address ||
+    !Shipping_Method
+  ) {
+    res.status(400).json({
+      success: false,
+      message: "Missing required fields",
+    });
+    return;
+  }
+
+  try {
+    // Calculate total amount
+    const totalAmount = items.reduce((sum: number, item: any) => {
+      return sum + item.Quantity * item.Unit_Price;
+    }, 0);
+
+    const newOrder = await prisma.purchase_Order.create({
+      data: {
+        Order_ID: `ORD-${Date.now()}`,
+        Supplier_ID,
+        Order_Date: new Date(),
+        Delivery_Date: Delivery_Date ? new Date(Delivery_Date) : null,
+        Payment_Terms,
+        Payment_Method,
+        Shipping_Address,
+        Shipping_Method,
+        Shipping_Instructions: Shipping_Instructions || "",
+        Notes: Notes || "",
+        Total_Amount: totalAmount,
+        details: {
+          create: items.map((item: any) => ({
+            Product_ID: item.Product_ID,
+            Quantity: item.Quantity,
+            Unit_Price: item.Unit_Price,
+          })),
         },
-        include: {
-          details: true,
-        },
-      });
-  
-      res.status(201).json({ success: true, data: newOrder });
-    } catch (error) {
-      console.error("Error creating purchase order:", error);
-      res.status(500).json({ success: false, message: "Failed to create purchase order" });
-    }
-  });
+      },
+      include: {
+        details: true,
+      },
+    });
+
+    res.status(201).json({ success: true, data: newOrder });
+  } catch (error) {
+    console.error("Error creating purchase order:", error);
+    res.status(500).json({ success: false, message: "Failed to create purchase order" });
+  }
+});
+
   
 
 // Update a purchase order (optional)
 router.put("/purchase-orders/:id", async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { Supplier_ID, items } = req.body;
+    const {
+      Supplier_ID,
+      Delivery_Date,
+      Payment_Terms,
+      Payment_Method,
+      Shipping_Address,
+      Shipping_Method,
+      Shipping_Instructions,
+      Notes,
+      items,
+    } = req.body;
   
     try {
       const existingOrder = await prisma.purchase_Order.findUnique({
@@ -138,15 +178,23 @@ router.put("/purchase-orders/:id", async (req: Request, res: Response) => {
       }
   
       const updatedOrder = await prisma.purchase_Order.update({
-        where: { Purchase_Order_ID: parseInt(id) },
+        where: { Purchase_Order_ID: Number(id) },
         data: {
           Supplier_ID: Supplier_ID ?? existingOrder.Supplier_ID,
+          Delivery_Date: Delivery_Date ? new Date(Delivery_Date) : existingOrder.Delivery_Date,
+          Payment_Terms: Payment_Terms ?? existingOrder.Payment_Terms,
+          Payment_Method: Payment_Method ?? existingOrder.Payment_Method,
+          Shipping_Address: Shipping_Address ?? existingOrder.Shipping_Address,
+          Shipping_Method: Shipping_Method ?? existingOrder.Shipping_Method,
+          Shipping_Instructions: Shipping_Instructions ?? existingOrder.Shipping_Instructions,
+          Notes: Notes ?? existingOrder.Notes,
           Total_Amount: totalAmount,
         },
         include: {
           details: true,
         },
       });
+      
   
       res.status(200).json({ success: true, data: updatedOrder });
     } catch (error) {

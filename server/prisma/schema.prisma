@@ -50,30 +50,47 @@ model Supplier {
 
 
 model Product {
-  Product_ID     Int       @id @default(autoincrement())
-  Name           String
-  Description    String?   // nullable
-  Category       String?
-  Price          Decimal   @db.Decimal(10, 2)
-  Stock_Quantity Int       @default(0)
-
-  Supplier_ID    Int?      // optional FK
-  supplier       Supplier? @relation(fields: [Supplier_ID], references: [Supplier_ID], onDelete: SetNull)
+  Product_ID      Int       @id @default(autoincrement())
+  Item_ID         String    @unique                       // itemId
+  Name            String                                  // itemName
+  Category        String                                  // category
+  Subcategory     String?                                 // subcategory
+  Manufacturer    String?                                 // manufacturer
+  Supplier_ID     Int?                                    // supplier (FK)
+  supplier        Supplier?  @relation(fields: [Supplier_ID], references: [Supplier_ID], onDelete: SetNull)
+  Initial_Stock   Int                                      // initialStock
+  Unit            String                                   // unit
+  Min_Stock       Int                                      // minStock
+  Location        String?                                  // location
+  Batch_Number    String?                                  // batchNumber
+  Purchase_Price  Decimal   @db.Decimal(10, 2)             // purchasePrice
+  Selling_Price   Decimal   @db.Decimal(10, 2)             // sellingPrice
+  Description     String?                                  // description
+  Notes           String?                                  // notes
 
   purchaseOrderDetails Purchase_Order_Details[]
   salesOrderDetails    Sales_Order_Details[]
   stockTransactions    Stock_Transaction[]
 }
 
+
 model Purchase_Order {
-  Purchase_Order_ID Int       @id @default(autoincrement())
-  Order_Date        DateTime
-  Total_Amount      Decimal   @db.Decimal(10, 2)
+  Purchase_Order_ID     Int       @id @default(autoincrement())
+  Order_ID              String    @unique
+  Order_Date            DateTime
+  Delivery_Date         DateTime?
+  Total_Amount          Decimal   @db.Decimal(10, 2)
+  Payment_Terms         String
+  Payment_Method        String
+  Shipping_Address      String
+  Shipping_Method       String
+  Shipping_Instructions String
+  Notes                 String
 
-  Supplier_ID       Int
-  supplier          Supplier  @relation(fields: [Supplier_ID], references: [Supplier_ID], onDelete: Cascade)
+  Supplier_ID           Int
+  supplier              Supplier  @relation(fields: [Supplier_ID], references: [Supplier_ID], onDelete: Cascade)
 
-  details           Purchase_Order_Details[]
+  details               Purchase_Order_Details[]
 }
 
 model Purchase_Order_Details {
@@ -87,6 +104,7 @@ model Purchase_Order_Details {
 
   @@id([Purchase_Order_ID, Product_ID])
 }
+
 
 model Sales_Order {
   Sales_Order_ID Int       @id @default(autoincrement())

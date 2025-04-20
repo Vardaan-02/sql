@@ -1,5 +1,7 @@
 import { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { Prisma } from '@prisma/client';
+
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -54,68 +56,123 @@ router.get("/products/:id", async (req: Request, res: Response) => {
 
 // Create a new product
 router.post("/products", async (req: Request, res: Response) => {
-    const { Name, Description, Category, Price, Stock_Quantity, Supplier_ID } = req.body;
-  
-    if (!Name || !Price) {
-      
-        res.status(400).json({ success: false, message: "Name and Price are required" });
-    
-        return;}
-  
-    try {
-      const newProduct = await prisma.product.create({
-        data: {
-          Name,
-          Description,
-          Category,
-          Price,
-          Stock_Quantity: Stock_Quantity ?? 0,
-          Supplier_ID,
-        },
-      });
-  
-      res.status(201).json({ success: true, data: newProduct });
-    } catch (error) {
-      console.error("Error creating product:", error);
-      res.status(500).json({ success: false, message: "Failed to create product" });
-    }
-  });
-  
+  const {
+    itemId,
+    itemName,
+    category,
+    subcategory,
+    manufacturer,
+    supplier,
+    initialStock,
+    unit,
+    minStock,
+    location,
+    batchNumber,
+    purchasePrice,
+    sellingPrice,
+    description,
+    notes,
+  } = req.body;
 
-// Update product details
+  // Basic validation
+  if (!itemId || !itemName || !purchasePrice || !sellingPrice) {
+    res.status(400).json({
+      success: false,
+      message: "itemId, itemName, purchasePrice, and sellingPrice are required",
+    });
+    return;
+  }
+
+  try {
+    const newProduct = await prisma.product.create({
+      data: {
+        Item_ID: itemId,
+        Name: itemName,
+        Category: category,
+        Subcategory: subcategory,
+        Manufacturer: manufacturer,
+        Supplier_ID: supplier ? parseInt(supplier) : null,
+        Initial_Stock: initialStock ? parseInt(initialStock) : 0,
+        Unit: unit,
+        Min_Stock: minStock ? parseInt(minStock) : 0,
+        Location: location,
+        Batch_Number: batchNumber,
+        Purchase_Price: new Prisma.Decimal(purchasePrice),
+        Selling_Price: new Prisma.Decimal(sellingPrice),
+        Description: description,
+        Notes: notes,
+      },
+    });
+
+    res.status(201).json({ success: true, data: newProduct });
+  } catch (error) {
+    console.error("Error creating product:", error);
+    res.status(500).json({ success: false, message: "Failed to create product" });
+  }
+});
+
+
 router.put("/products/:id", async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const { Name, Description, Category, Price, Stock_Quantity, Supplier_ID } = req.body;
-  
-    try {
-      const existingProduct = await prisma.product.findUnique({
-        where: { Product_ID: parseInt(id) },
+  const { id } = req.params;
+  const {
+    itemId,
+    itemName,
+    category,
+    subcategory,
+    manufacturer,
+    supplier,
+    initialStock,
+    unit,
+    minStock,
+    location,
+    batchNumber,
+    purchasePrice,
+    sellingPrice,
+    description,
+    notes,
+  } = req.body;
+
+  try {
+    const existingProduct = await prisma.product.findUnique({
+      where: { Product_ID: parseInt(id) },
+    });
+
+    if (!existingProduct) {
+      res.status(404).json({
+        success: false,
+        message: "Product not found",
       });
-  
-      if (!existingProduct) {
-        res.status(404).json({ success: false, message: "Product not found" });
-        return;
+      return;
     }
-  
-      const updatedProduct = await prisma.product.update({
-        where: { Product_ID: parseInt(id) },
-        data: {
-          Name: Name ?? existingProduct.Name,
-          Description: Description ?? existingProduct.Description,
-          Category: Category ?? existingProduct.Category,
-          Price: Price ?? existingProduct.Price,
-          Stock_Quantity: Stock_Quantity ?? existingProduct.Stock_Quantity,
-          Supplier_ID: Supplier_ID ?? existingProduct.Supplier_ID,
-        },
-      });
-  
-      res.status(200).json({ success: true, data: updatedProduct });
-    } catch (error) {
-      console.error("Error updating product:", error);
-      res.status(500).json({ success: false, message: "Failed to update product" });
-    }
-  });
-  
+
+    const updatedProduct = await prisma.product.update({
+      where: { Product_ID: parseInt(id) },
+      data: {
+        Item_ID: itemId ?? existingProduct.Item_ID,
+        Name: itemName ?? existingProduct.Name,
+        Category: category ?? existingProduct.Category,
+        Subcategory: subcategory ?? existingProduct.Subcategory,
+        Manufacturer: manufacturer ?? existingProduct.Manufacturer,
+        Supplier_ID: supplier ? parseInt(supplier) : existingProduct.Supplier_ID,
+        Initial_Stock: initialStock ? parseInt(initialStock) : existingProduct.Initial_Stock,
+        Unit: unit ?? existingProduct.Unit,
+        Min_Stock: minStock ? parseInt(minStock) : existingProduct.Min_Stock,
+        Location: location ?? existingProduct.Location,
+        Batch_Number: batchNumber ?? existingProduct.Batch_Number,
+        Purchase_Price: purchasePrice ? new Prisma.Decimal(purchasePrice) : existingProduct.Purchase_Price,
+        Selling_Price: sellingPrice ? new Prisma.Decimal(sellingPrice) : existingProduct.Selling_Price,
+        Description: description ?? existingProduct.Description,
+        Notes: notes ?? existingProduct.Notes,
+      },
+    });
+
+    res.status(200).json({ success: true, data: updatedProduct });
+  } catch (error) {
+    console.error("Error updating product:", error);
+    res.status(500).json({ success: false, message: "Failed to update product" });
+  }
+});
+
 
 // Delete a product
 router.delete("/products/:id", async (req: Request, res: Response) => {
@@ -145,26 +202,43 @@ router.delete("/products/:id", async (req: Request, res: Response) => {
 
 // Get products below stock threshold
 router.get("/products/low-stock", async (req: Request, res: Response) => {
-    const threshold = parseInt(req.query.threshold as string) || 10;
-  
-    try {
-      const lowStockProducts = await prisma.product.findMany({
-        where: {
-          Stock_Quantity: {
+  const threshold = parseInt(req.query.threshold as string);
+
+  try {
+    const whereClause = threshold
+      ? {
+          Initial_Stock: {
             lt: threshold,
           },
-        },
-        include: {
-          supplier: true,
-        },
-      });
-  
-      res.status(200).json({ success: true, data: lowStockProducts });
-    } catch (error) {
-      console.error("Error fetching low stock products:", error);
-      res.status(500).json({ success: false, message: "Failed to fetch low stock products" });
-    }
-  });
-  
+        }
+      : {}; // No filtering if no threshold
+
+    const products = await prisma.product.findMany({
+      where: whereClause,
+      include: {
+        supplier: true,
+      },
+    });
+
+    // If no threshold is provided, filter using Min_Stock on the JS side
+    const filteredProducts = threshold
+      ? products
+      : products.filter(
+          (p) =>
+            typeof p.Min_Stock === "number" &&
+            typeof p.Initial_Stock === "number" &&
+            p.Initial_Stock < p.Min_Stock
+        );
+
+    res.status(200).json({ success: true, data: filteredProducts });
+  } catch (error) {
+    console.error("Error fetching low stock products:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch low stock products" });
+  }
+});
+
+
 
 export default router;
