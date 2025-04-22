@@ -107,6 +107,7 @@ export function AddInventoryDialog({
     try {
       // Make the Axios request to your API
       const response = await axios.post("http://localhost:5000/products", data);
+      console.log(data);
 
       // Check for successful response
       if (response.status === 201) {
@@ -167,9 +168,10 @@ export function AddInventoryDialog({
                 <div className="space-y-2">
                   <Label htmlFor="category">Category</Label>
                   <Select
-                    name="category"
                     value={formData.category}
-                    onChange={handleInputChange}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, category: value }))
+                    }
                   >
                     <SelectTrigger id="category">
                       <SelectValue placeholder="Select category" />
@@ -207,24 +209,22 @@ export function AddInventoryDialog({
                 <div className="space-y-2">
                   <Label htmlFor="supplier">Supplier</Label>
                   <Select
-                    name="supplier"
                     value={formData.supplier}
-                    onChange={handleInputChange}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, supplier: value }))
+                    }
                   >
                     <SelectTrigger id="supplier">
                       <SelectValue placeholder="Select supplier" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="medsupply">MedSupply Co.</SelectItem>
-                      <SelectItem value="pharmatech">
-                        PharmaTech Inc.
-                      </SelectItem>
-                      <SelectItem value="mediequip">MediEquip Ltd.</SelectItem>
-                      <SelectItem value="labsupplies">
-                        LabSupplies Global
-                      </SelectItem>
+                      <SelectItem value="1">MedSupply Co.</SelectItem>
+                      <SelectItem value="2">PharmaTech Inc.</SelectItem>
+                      <SelectItem value="3">MediEquip Ltd.</SelectItem>
+                      <SelectItem value="4">LabSupplies Global</SelectItem>
                     </SelectContent>
                   </Select>
+
                 </div>
               </div>
             </TabsContent>

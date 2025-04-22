@@ -24,14 +24,12 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useSidebar } from "@/components/ui/sidebar";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { UserNav } from "@/components/layout/user-nav";
-import { useAuth } from "@/hooks/use-auth";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function AppSidebar({ className }: SidebarProps) {
   const pathname = usePathname();
   const { open: isOpen, setOpen: setIsOpen } = useSidebar();
-  const { isAuthenticated, logout } = useAuth();
 
   // Don't show sidebar on auth pages
   if (pathname.startsWith("/auth/")) {
@@ -60,7 +58,6 @@ interface SidebarContentProps {
 
 function MobileSidebar({ pathname }: SidebarContentProps) {
   const { setOpen: setIsOpen } = useSidebar();
-  const { logout } = useAuth();
 
   return (
     <div className="flex h-full flex-col">

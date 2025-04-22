@@ -5,8 +5,6 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/sidebar";
-import { AuthProvider } from "@/hooks/use-auth";
-import { AuthGuard } from "@/components/auth/auth-guard";
 import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -31,16 +29,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider>
-            <AuthGuard>
-              <SidebarProvider>
-                <div className="flex">
-                    <AppSidebar />
-                    <main className="w-screen flex overflow-hidden">{children}</main>
-                </div>
-              </SidebarProvider>
-            </AuthGuard>
-          </AuthProvider>
+          <SidebarProvider>
+            <div className="flex">
+              <AppSidebar />
+              <main className="w-screen flex overflow-hidden">{children}</main>
+            </div>
+          </SidebarProvider>
           <Toaster />
         </ThemeProvider>
       </body>

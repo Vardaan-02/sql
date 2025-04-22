@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -52,16 +52,32 @@ export function CreateOrderDialog({
   const [orderDate, setOrderDate] = useState(
     new Date().toISOString().split("T")[0]
   );
-  const [supplier, setSupplier] = useState("");
   const [deliveryDate, setDeliveryDate] = useState<Date>();
   const [paymentTerms, setPaymentTerms] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [shippingAddress, setShippingAddress] = useState(
     "Medical Center Main Building, 123 Healthcare Ave, Medical District, MD 12345"
   );
+  const [supplier, setSupplier] = useState("");
+  const [suppliers, setSuppliers] = useState<{ id: string; name: string }[]>(
+    []
+  );
   const [shippingMethod, setShippingMethod] = useState("standard");
   const [shippingInstructions, setShippingInstructions] = useState("");
   const [notes, setNotes] = useState("");
+  useEffect(() => {
+    const fetchSuppliers = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/suppliers");
+        setSuppliers(response.data.data); // Adjust if your API structure differs
+        console.log(response.data.data)
+      } catch (error) {
+        console.error("Error fetching suppliers:", error);
+      }
+    };
+
+    fetchSuppliers();
+  }, []);
 
   const [orderItems, setOrderItems] = useState<
     { id: string; name: string; quantity: number; price: number }[]
@@ -100,16 +116,25 @@ export function CreateOrderDialog({
       alert("Please fill in all required fields.");
       return;
     }
-  
+
     const orderData = {
-      Supplier_ID: Number(supplier), // This is key
+      Supplier_ID: Number(supplier),
+      Delivery_Date: deliveryDate?.toISOString().split("T")[0] || null,
+      Payment_Terms: paymentTerms,
+      Payment_Method: paymentMethod,
+      Shipping_Address: shippingAddress,
+      Shipping_Method: shippingMethod,
+      Shipping_Instructions: shippingInstructions,
+      Notes: notes,
       items: orderItems.map((item) => ({
         Product_ID: Number(item.id),
         Quantity: item.quantity,
         Unit_Price: item.price,
       })),
     };
-  
+
+    console.log(orderData);
+
     try {
       const response = await axios.post(
         "http://localhost:5000/purchase-orders", // updated route
@@ -122,8 +147,6 @@ export function CreateOrderDialog({
       alert("Failed to create order. Please try again.");
     }
   };
-  
-  
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -166,12 +189,11 @@ export function CreateOrderDialog({
                     <SelectValue placeholder="Select supplier" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">MedSupply Co.</SelectItem>
-                    <SelectItem value="2">PharmaTech Inc.</SelectItem>
-                    <SelectItem value="3">MediEquip Ltd.</SelectItem>
-                    <SelectItem value="4">
-                      LabSupplies Global
-                    </SelectItem>
+                    {suppliers.map((sup) => (
+                      <SelectItem key={sup.Supplier_ID} value={sup.Supplier_ID}>
+                        {sup.Name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

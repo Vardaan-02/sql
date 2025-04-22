@@ -32,6 +32,7 @@ import {
   UndoIcon,
 } from "lucide-react";
 import { SupplierDetailsDialog } from "@/components/suppliers/supplier-details-dialog";
+import Link from "next/link";
 
 interface Supplier {
   Supplier_ID: number;
@@ -111,8 +112,8 @@ export function SuppliersTable({
 
     // Filter by search query (if the 'searchQuery' prop is passed)
     if (
-      (searchQuery &&
-        !supplier.Name.toLowerCase().includes(searchQuery.toLowerCase()))
+      searchQuery &&
+      !supplier.Name.toLowerCase().includes(searchQuery.toLowerCase())
     ) {
       return false;
     }
@@ -271,8 +272,10 @@ export function SuppliersTable({
                           Edit Supplier
                         </DropdownMenuItem>
                         <DropdownMenuItem>
-                          <ShoppingCart className="mr-2 h-4 w-4" />
-                          Create Order
+                          <Link href={"/orders"} className="flex">
+                            <ShoppingCart className="mr-2 h-4 w-4" />
+                            Create Order
+                          </Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem

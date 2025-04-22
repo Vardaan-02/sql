@@ -24,31 +24,31 @@ app.get("/", (req: Request, res: Response)=>{
     res.send("server is running");
 })
 
-// import auth from "./routes/auth.routes.js";
-// app.use("/auth", auth);
-// import { verifyEmail } from './controllers/otp/verify-email.controller.js';
-// app.get('/verify-email', verifyEmail);
-// import otp from "./routes/otp.routes.js";
-// app.use("/otp", otp);
-// import user from "./routes/user.routes.js";
-// app.use("/user", isAuthorized, user);
+import auth from "./routes/auth.routes.js";
+app.use("/auth", auth);
+import { verifyEmail } from './controllers/otp/verify-email.controller.js';
+app.get('/verify-email', verifyEmail);
+import otp from "./routes/otp.routes.js";
+app.use("/otp", otp);
+import user from "./routes/user.routes.js";
+app.use("/user", isAuthorized, user);
 import supplier from "./routes/supplier.routes.js";
 app.use("/", supplier);
 import product from "./routes/product.routes.js";
 app.use("/", product);
-// import purchaseOrder from "./routes/purchaseOrder.routes.js";
-// app.use("/", purchaseOrder);
-// import saleOrder from "./routes/saleOrder.routes.js";
-// app.use("/", saleOrder);
-// import stockTransaction from "./routes/stockTransaction.routes.js";
-// app.use("/", stockTransaction);
-// import dashboard from "./routes/dashboard.routes.js"
-// app.use("/", dashboard);
+import purchaseOrder from "./routes/purchaseOrder.routes.js";
+app.use("/", purchaseOrder);
+import saleOrder from "./routes/saleOrder.routes.js";
+app.use("/", saleOrder);
+import stockTransaction from "./routes/stockTransaction.routes.js";
+app.use("/", stockTransaction);
+import dashboard from "./routes/dashboard.routes.js"
+app.use("/", dashboard);
 
-// app.get("/protected-route", isAuthorized, (req, res)=>{
-//     res.send("This is a protected route");
-//     return;
-// })
+app.get("/protected-route", isAuthorized, (req, res)=>{
+    res.send("This is a protected route");
+    return;
+})
 
 app.listen(PORT, ()=>{
     console.log(`server running on port ${process.env.PORT}`);

@@ -1,17 +1,24 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-import { Eye, EyeOff, Loader2 } from "lucide-react"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { useToast } from "@/hooks/use-toast"
-import { useAuth } from "@/hooks/use-auth"
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import axios from "axios";
 
 const formSchema = z
   .object({
@@ -27,15 +34,14 @@ const formSchema = z
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
-  })
+  });
 
 export function SignupForm() {
-  const { toast } = useToast()
-  const router = useRouter()
-  const { signup } = useAuth()
-  const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const { toast } = useToast();
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -45,26 +51,40 @@ export function SignupForm() {
       password: "",
       confirmPassword: "",
     },
-  })
+  });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsLoading(true)
+    setIsLoading(true);
+    console.log({
+      name: values.name,
+      email: values.email,
+      password: values.password,
+    });
     try {
-      // In a real application, this would call an API endpoint
-      await signup(values.name, values.email, values.password)
-      toast({
-        title: "Account created",
-        description: "Your account has been created successfully",
-      })
-      router.push("/dashboard")
-    } catch (error) {
+      const response = await axios.post("http://localhost:5000/auth/register", {
+        name: values.name,
+        email: values.email,
+        password: values.password,
+      });
+
+      // If your API responds with success
+      if (response.status === 201 || response.status === 200) {
+        toast({
+          title: "Account created",
+          description: "Your account has been created successfully",
+        });
+        router.push("/dashboard");
+      }
+    } catch (error: any) {
       toast({
         title: "Registration failed",
-        description: "There was a problem creating your account",
+        description:
+          error?.response?.data?.message ||
+          "There was a problem creating your account",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
@@ -105,7 +125,11 @@ export function SignupForm() {
               <FormLabel>Password</FormLabel>
               <FormControl>
                 <div className="relative">
-                  <Input type={showPassword ? "text" : "password"} placeholder="••••••••" {...field} />
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    {...field}
+                  />
                   <Button
                     type="button"
                     variant="ghost"
@@ -113,8 +137,14 @@ export function SignupForm() {
                     className="absolute right-0 top-0 h-full px-3 py-2"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    <span className="sr-only">{showPassword ? "Hide password" : "Show password"}</span>
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                    <span className="sr-only">
+                      {showPassword ? "Hide password" : "Show password"}
+                    </span>
                   </Button>
                 </div>
               </FormControl>
@@ -130,7 +160,11 @@ export function SignupForm() {
               <FormLabel>Confirm Password</FormLabel>
               <FormControl>
                 <div className="relative">
-                  <Input type={showConfirmPassword ? "text" : "password"} placeholder="••••••••" {...field} />
+                  <Input
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    {...field}
+                  />
                   <Button
                     type="button"
                     variant="ghost"
@@ -138,8 +172,14 @@ export function SignupForm() {
                     className="absolute right-0 top-0 h-full px-3 py-2"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
-                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    <span className="sr-only">{showConfirmPassword ? "Hide password" : "Show password"}</span>
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                    <span className="sr-only">
+                      {showConfirmPassword ? "Hide password" : "Show password"}
+                    </span>
                   </Button>
                 </div>
               </FormControl>
@@ -159,5 +199,5 @@ export function SignupForm() {
         </Button>
       </form>
     </Form>
-  )
+  );
 }

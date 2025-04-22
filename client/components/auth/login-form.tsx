@@ -1,31 +1,37 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-import { Eye, EyeOff, Loader2 } from "lucide-react"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { useToast } from "@/hooks/use-toast"
-import { useAuth } from "@/hooks/use-auth"
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import axios from "axios";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(8, {
     message: "Password must be at least 8 characters",
   }),
-})
+});
 
 export function LoginForm() {
-  const { toast } = useToast()
-  const router = useRouter()
-  const { login } = useAuth()
-  const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
+  const { toast } = useToast();
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -33,27 +39,38 @@ export function LoginForm() {
       email: "",
       password: "",
     },
-  })
+  });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    // setIsLoading(true)
-    // try {
-    //   // In a real application, this would call an API endpoint
-    //   await login(values.email, values.password)
-    //   toast({
-    //     title: "Login successful",
-    //     description: "Welcome back to the Medical Inventory System",
-    //   })
-    //   router.push("/dashboard")
-    // } catch (error) {
-    //   toast({
-    //     title: "Login failed",
-    //     description: "Please check your credentials and try again",
-    //     variant: "destructive",
-    //   })
-    // } finally {
-    //   setIsLoading(false)
-    // }
+    setIsLoading(true);
+    console.log({
+      email: values.email,
+      password: values.password,
+    });
+    try {
+      const response = await axios.post("http://localhost:5000/auth/login", {
+        emailOrUsername: values.email,
+        password: values.password,
+      });
+
+      if (response.status === 200) {
+        toast({
+          title: "Login successful",
+          description: "Welcome back to the Medical Inventory System",
+        });
+        router.push("/dashboard");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Login failed",
+        description:
+          error?.response?.data?.message ||
+          "Please check your credentials and try again",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -80,7 +97,11 @@ export function LoginForm() {
               <FormLabel>Password</FormLabel>
               <FormControl>
                 <div className="relative">
-                  <Input type={showPassword ? "text" : "password"} placeholder="••••••••" {...field} />
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    {...field}
+                  />
                   <Button
                     type="button"
                     variant="ghost"
@@ -88,8 +109,14 @@ export function LoginForm() {
                     className="absolute right-0 top-0 h-full px-3 py-2"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    <span className="sr-only">{showPassword ? "Hide password" : "Show password"}</span>
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                    <span className="sr-only">
+                      {showPassword ? "Hide password" : "Show password"}
+                    </span>
                   </Button>
                 </div>
               </FormControl>
@@ -109,5 +136,5 @@ export function LoginForm() {
         </Button>
       </form>
     </Form>
-  )
+  );
 }

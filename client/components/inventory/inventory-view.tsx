@@ -1,10 +1,16 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,13 +18,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Filter, Plus, Search, SlidersHorizontal } from "lucide-react"
-import { InventoryTable } from "@/components/inventory/inventory-table"
-import { AddInventoryDialog } from "@/components/inventory/add-inventory-dialog"
+} from "@/components/ui/dropdown-menu";
+import { Filter, Plus, Search, SlidersHorizontal } from "lucide-react";
+import { InventoryTable } from "@/components/inventory/inventory-table";
+import { AddInventoryDialog } from "@/components/inventory/add-inventory-dialog";
 
 export default function InventoryView() {
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -95,53 +102,37 @@ export default function InventoryView() {
         <div className="flex items-center space-x-2">
           <div className="relative flex-1 md:max-w-sm">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input type="search" placeholder="Search inventory..." className="pl-8" />
+            <Input
+              type="search"
+              placeholder="Search inventory..."
+              className="pl-8"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
-
-          <Select defaultValue="all">
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              <SelectItem value="medications">Medications</SelectItem>
-              <SelectItem value="equipment">Equipment</SelectItem>
-              <SelectItem value="supplies">Supplies</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select defaultValue="all">
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="in-stock">In Stock</SelectItem>
-              <SelectItem value="low-stock">Low Stock</SelectItem>
-              <SelectItem value="out-of-stock">Out of Stock</SelectItem>
-              <SelectItem value="expiring-soon">Expiring Soon</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
 
         <TabsContent value="all">
-          <InventoryTable />
+          <InventoryTable searchQuery={searchQuery}/>
         </TabsContent>
 
         <TabsContent value="medications">
-          <InventoryTable category="medications" />
+          <InventoryTable category="medications" searchQuery={searchQuery}/>
         </TabsContent>
 
         <TabsContent value="equipment">
-          <InventoryTable category="equipment" />
+          <InventoryTable category="equipment" searchQuery={searchQuery}/>
         </TabsContent>
 
         <TabsContent value="supplies">
-          <InventoryTable category="supplies" />
+          <InventoryTable category="supplies" searchQuery={searchQuery}/>
         </TabsContent>
       </Tabs>
 
-      <AddInventoryDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
+      <AddInventoryDialog
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+      />
     </div>
-  )
+  );
 }
