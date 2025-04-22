@@ -25,7 +25,6 @@ router.get("/products", async (req: Request, res: Response) => {
     }
   });
   
-
 // Get a specific product
 router.get("/products/:id", async (req: Request, res: Response) => {
     const { id } = req.params;
@@ -53,7 +52,6 @@ router.get("/products/:id", async (req: Request, res: Response) => {
     }
   });
   
-
 // Create a new product
 router.post("/products", async (req: Request, res: Response) => {
   const {
@@ -111,7 +109,7 @@ router.post("/products", async (req: Request, res: Response) => {
   }
 });
 
-
+// Edit a product
 router.put("/products/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
   const {
@@ -173,7 +171,6 @@ router.put("/products/:id", async (req: Request, res: Response) => {
   }
 });
 
-
 // Delete a product
 router.delete("/products/:id", async (req: Request, res: Response) => {
     const { id } = req.params;
@@ -199,7 +196,6 @@ router.delete("/products/:id", async (req: Request, res: Response) => {
     }
   });
   
-
 // Get products below stock threshold
 router.get("/products/low-stock", async (req: Request, res: Response) => {
   const threshold = parseInt(req.query.threshold as string);

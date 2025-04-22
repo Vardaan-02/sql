@@ -42,7 +42,6 @@ router.get("/reports/stock-summary", async (req: Request, res: Response) => {
   }
 });
 
-
 // Aggregated purchase totals by month
 router.get("/reports/purchase-summary", async (req: Request, res: Response) => {
   try {
@@ -82,10 +81,7 @@ router.get("/reports/purchase-summary", async (req: Request, res: Response) => {
     console.error("Error fetching purchase summary:", error);
     res.status(500).json({ success: false, message: "Failed to fetch purchase summary" });
   }
-});
-
-
-  
+});  
 
 // Aggregated sales totals by month
 router.get("/reports/sales-summary", async (req: Request, res: Response) => {
